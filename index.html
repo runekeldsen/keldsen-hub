@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keldsen Hub</title>
+<meta name="description" content="A collection of solutions live on keldsen.org">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏠</text></svg>">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg-elev: #131319;
+    --card: #17171f;
+    --card-hover: #1e1e28;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --text: #f2f2f5;
+    --text-dim: #9797a3;
+    --text-faint: #5f5f6b;
+    --accent: #7c6cff;
+    --accent2: #ff6ca8;
+    --accent3: #4fd6c8;
+    --radius: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(124,108,255,0.16), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgba(255,108,168,0.12), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(79,214,200,0.10), transparent 45%);
+    pointer-events: none;
+  }
+
+  /* ---------- Gate ---------- */
+  #gate {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+  }
+
+  #gate.hidden {
+    display: none;
+  }
+
+  .gate-card {
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+    padding: 0 24px;
+  }
+
+  .gate-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 24px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 12px 40px rgba(124,108,255,0.35);
+  }
+
+  .gate-card h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .gate-card p {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+
+  #gate-input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    text-align: center;
+    letter-spacing: 0.15em;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  #gate-input:focus {
+    border-color: var(--accent);
+  }
+
+  #gate-input.shake {
+    animation: shake 0.4s ease;
+    border-color: var(--accent2);
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  #gate-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), #6355e0);
+    color: white;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  #gate-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(124,108,255,0.35);
+  }
+
+  #gate-btn:active {
+    transform: translateY(0);
+  }
+
+  .gate-error {
+    color: var(--accent2);
+    font-size: 13px;
+    margin-top: 14px;
+    height: 16px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .gate-error.show { opacity: 1; }
+
+  /* ---------- App ---------- */
+  #app {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px 80px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  #app.visible { opacity: 1; }
+
+  header.hero {
+    padding: 72px 0 48px;
+    text-align: center;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 7px 14px;
+    border-radius: 999px;
+    margin-bottom: 24px;
+  }
+
+  .eyebrow .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent3);
+    box-shadow: 0 0 8px var(--accent3);
+  }
+
+  header.hero h1 {
+    font-size: clamp(36px, 6vw, 58px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    background: linear-gradient(135deg, #ffffff 30%, #b6b3d6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 18px;
+  }
+
+  header.hero p {
+    color: var(--text-dim);
+    font-size: 17px;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat strong {
+    display: block;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .stat span {
+    font-size: 12px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.25s cubic-bezier(.2,.8,.2,1), border-color 0.25s ease, box-shadow 0.25s ease;
+    position: relative;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    border-color: var(--border-hover);
+    box-shadow: 0 24px 48px -12px rgba(0,0,0,0.6);
+  }
+
+  .card:hover .thumb img {
+    transform: scale(1.06);
+  }
+
+  .thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/10;
+    overflow: hidden;
+    background: var(--bg-elev);
+  }
+
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .thumb::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 55%, rgba(23,23,31,0.9) 100%);
+  }
+
+  .badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  }
+
+  .open-icon {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(10,10,15,0.55);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .card:hover .open-icon {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .open-icon svg {
+    width: 14px;
+    height: 14px;
+    stroke: white;
+  }
+
+  .card-body {
+    padding: 18px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .card-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .card-body h3 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .card-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .card-body p {
+    font-size: 13.5px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .card-url {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-faint);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .card-url::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent3);
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 72px;
+    color: var(--text-faint);
+    font-size: 13px;
+  }
+
+  @media (max-width: 640px) {
+    #app { padding: 0 18px 60px; }
+    header.hero { padding: 56px 0 36px; }
+    .grid { grid-template-columns: 1fr; gap: 18px; }
+  }
+</style>
+</head>
+<body>
+
+  <div id="gate">
+    <div class="gate-card">
+      <div class="gate-icon">🔒</div>
+      <h1>Keldsen Hub</h1>
+      <p>Enter the passcode to continue</p>
+      <input id="gate-input" type="password" inputmode="numeric" placeholder="••••" autocomplete="off" maxlength="12" />
+      <button id="gate-btn">Unlock</button>
+      <div class="gate-error" id="gate-error">Incorrect passcode</div>
+    </div>
+  </div>
+
+  <div id="app">
+    <header class="hero">
+      <div class="eyebrow"><span class="dot"></span> keldsen.org</div>
+      <h1>Everything I've built,<br>in one place.</h1>
+      <p>A collection of apps, dashboards and tools running live on this domain — each one solving a real problem at home.</p>
+      <div class="stats-row" id="stats-row"></div>
+    </header>
+
+    <main class="grid" id="grid"></main>
+
+    <footer>Built &amp; maintained by Rune · keldsen.org</footer>
+  </div>
+
+<script>
+  const PASSCODE = "123";
+
+  const apps = [
+    {
+      name: "La Cave",
+      tag: "Wine Cellar",
+      desc: "Visual rack layout, bottle inventory, drinking windows, food pairings and AI label scanning for the home wine collection.",
+      url: "https://wine.keldsen.org",
+      img: "img/wine.jpg",
+      icon: "🍷",
+      color: "#7c3f2e"
+    },
+    {
+      name: "FitAI",
+      tag: "Fitness",
+      desc: "AI-powered cable training — smart programs, progressive overload, and automatic personal record tracking.",
+      url: "https://fitness.keldsen.org",
+      img: "img/fitness.jpg",
+      icon: "🏋️",
+      color: "#7a1f1f"
+    },
+    {
+      name: "AI Academy",
+      tag: "Training",
+      desc: "Hands-on practical AI training platform — trainer dashboard, learner portal, modules, tests and projects.",
+      url: "https://ai.keldsen.org",
+      img: "img/ai.jpg",
+      icon: "🎓",
+      color: "#1c2350"
+    },
+    {
+      name: "Private Budget",
+      tag: "Finance",
+      desc: "Personal budgeting app — track income, expenses, categories and imported bank transactions.",
+      url: "https://budget.keldsen.org",
+      img: "img/budget.jpg",
+      icon: "💰",
+      color: "#1f4d2e"
+    },
+    {
+      name: "Garden Bed Planner",
+      tag: "Home",
+      desc: "Square foot garden bed planning tool — lay out beds, plants, and track what's growing where.",
+      url: "https://have.keldsen.org",
+      img: "img/have.jpg",
+      icon: "🌱",
+      color: "#2f4d1f"
+    },
+    {
+      name: "WiFi Monitor",
+      tag: "Network",
+      desc: "Room-by-room signal tracking across Deco and UniFi mesh gear, with issue history and one-click fixes.",
+      url: "https://wifi.keldsen.org",
+      img: "img/wifi.jpg",
+      icon: "📶",
+      color: "#2e2266"
+    },
+    {
+      name: "Basti & Rune",
+      tag: "Travel",
+      desc: "Trip planning site with itinerary, activities, and travel info for our adventures.",
+      url: "https://basti.keldsen.org",
+      img: "img/basti.jpg",
+      icon: "🌊",
+      color: "#0e4a63"
+    },
+    {
+      name: "TILT",
+      tag: "Events",
+      desc: "Celebration dinner date-picker — coordinating the team's plans for 25 years of Lloyd.",
+      url: "https://tilt.keldsen.org",
+      img: "img/tilt.jpg",
+      icon: "🎉",
+      color: "#8a6a10"
+    },
+    {
+      name: "Local AI Chat",
+      tag: "AI",
+      desc: "Self-hosted, privacy-first LLM chat interface running entirely on local hardware.",
+      url: "https://chat.keldsen.org",
+      img: "img/chat.jpg",
+      icon: "🤖",
+      color: "#333333"
+    }
+  ];
+
+  function render() {
+    const grid = document.getElementById("grid");
+    const statsRow = document.getElementById("stats-row");
+
+    grid.innerHTML = apps.map(app => `
+      <a class="card" href="${app.url}" target="_blank" rel="noopener">
+        <div class="thumb">
+          <div class="badge" style="background:${app.color}">${app.icon}</div>
+          <div class="open-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 17L17 7M17 7H7M17 7V17"/>
+            </svg>
+          </div>
+          <img src="${app.img}" alt="${app.name} screenshot" loading="lazy" />
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <h3>${app.name}</h3>
+            <span class="card-tag" style="background:${app.color}33; color:#fff">${app.tag}</span>
+          </div>
+          <p>${app.desc}</p>
+          <div class="card-url">${app.url.replace('https://','')}</div>
+        </div>
+      </a>
+    `).join("");
+
+    statsRow.innerHTML = `
+      <div class="stat"><strong>${apps.length}</strong><span>Live Solutions</span></div>
+      <div class="stat"><strong>100%</strong><span>Self-Hosted</span></div>
+      <div class="stat"><strong>keldsen.org</strong><span>One Domain</span></div>
+    `;
+  }
+
+  function unlock() {
+    document.getElementById("gate").classList.add("hidden");
+    const app = document.getElementById("app");
+    app.classList.add("visible");
+    try { sessionStorage.setItem("hub_unlocked", "1"); } catch (e) {}
+  }
+
+  function tryUnlock() {
+    const input = document.getElementById("gate-input");
+    const error = document.getElementById("gate-error");
+    if (input.value === PASSCODE) {
+      unlock();
+    } else {
+      input.classList.remove("shake");
+      void input.offsetWidth;
+      input.classList.add("shake");
+      error.classList.add("show");
+      input.value = "";
+      input.focus();
+    }
+  }
+
+  document.getElementById("gate-btn").addEventListener("click", tryUnlock);
+  document.getElementById("gate-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") tryUnlock();
+  });
+
+  render();
+
+  let alreadyUnlocked = false;
+  try { alreadyUnlocked = sessionStorage.getItem("hub_unlocked") === "1"; } catch (e) {}
+
+  if (alreadyUnlocked) {
+    unlock();
+  } else {
+    document.getElementById("gate-input").focus();
+  }
+</script>
+</body>
+</html>

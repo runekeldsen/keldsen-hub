@@ -348,6 +348,76 @@
     stroke: white;
   }
 
+  .upload-icon {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 3;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(10,10,15,0.65);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s ease, transform 0.2s ease, background 0.15s ease;
+    cursor: pointer;
+    border: none;
+  }
+
+  .card:hover .upload-icon {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .upload-icon:hover {
+    background: rgba(124,108,255,0.85);
+  }
+
+  .upload-icon svg {
+    width: 15px;
+    height: 15px;
+    stroke: white;
+  }
+
+  .upload-icon.busy {
+    opacity: 1;
+    transform: translateY(0);
+    cursor: default;
+    animation: pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    z-index: 200;
+    background: var(--card);
+    border: 1px solid var(--border-hover);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+  }
+
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   .card-body {
     padding: 18px 20px 20px;
     display: flex;
@@ -444,6 +514,9 @@
     <footer>Built &amp; maintained by Rune · keldsen.org</footer>
   </div>
 
+  <div id="toast"></div>
+  <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" style="display:none" />
+
 <script>
   const PASSCODE = "123";
 
@@ -453,6 +526,7 @@
       tag: "Wine Cellar",
       desc: "Visual rack layout, bottle inventory, drinking windows, food pairings and AI label scanning for the home wine collection.",
       url: "https://wine.keldsen.org",
+      slug: "wine",
       img: "img/wine.jpg",
       icon: "🍷",
       color: "#7c3f2e"
@@ -462,6 +536,7 @@
       tag: "Fitness",
       desc: "AI-powered cable training — smart programs, progressive overload, and automatic personal record tracking.",
       url: "https://fitness.keldsen.org",
+      slug: "fitness",
       img: "img/fitness.jpg",
       icon: "🏋️",
       color: "#7a1f1f"
@@ -471,6 +546,7 @@
       tag: "Training",
       desc: "Hands-on practical AI training platform — trainer dashboard, learner portal, modules, tests and projects.",
       url: "https://ai.keldsen.org",
+      slug: "ai",
       img: "img/ai.jpg",
       icon: "🎓",
       color: "#1c2350"
@@ -480,6 +556,7 @@
       tag: "Finance",
       desc: "Personal budgeting app — track income, expenses, categories and imported bank transactions.",
       url: "https://budget.keldsen.org",
+      slug: "budget",
       img: "img/budget.jpg",
       icon: "💰",
       color: "#1f4d2e"
@@ -489,6 +566,7 @@
       tag: "Home",
       desc: "Square foot garden bed planning tool — lay out beds, plants, and track what's growing where.",
       url: "https://have.keldsen.org",
+      slug: "have",
       img: "img/have.jpg",
       icon: "🌱",
       color: "#2f4d1f"
@@ -498,6 +576,7 @@
       tag: "Network",
       desc: "Room-by-room signal tracking across Deco and UniFi mesh gear, with issue history and one-click fixes.",
       url: "https://wifi.keldsen.org",
+      slug: "wifi",
       img: "img/wifi.jpg",
       icon: "📶",
       color: "#2e2266"
@@ -507,6 +586,7 @@
       tag: "Travel",
       desc: "Trip planning site with itinerary, activities, and travel info for our adventures.",
       url: "https://basti.keldsen.org",
+      slug: "basti",
       img: "img/basti.jpg",
       icon: "🌊",
       color: "#0e4a63"
@@ -516,6 +596,7 @@
       tag: "Events",
       desc: "An over-the-top Doodle-style calendar for picking the date of a TILT dinner — celebrating a whole lot of things at once.",
       url: "https://tilt.keldsen.org",
+      slug: "tilt",
       img: "img/tilt.jpg",
       icon: "🎉",
       color: "#8a6a10"
@@ -525,6 +606,7 @@
       tag: "Events",
       desc: "The sequel: once the date's locked, this votes on everything else — theme, food, games, drinks — with a bespoke live Kahoot trivia game for the night itself.",
       url: "https://tilt2.keldsen.org",
+      slug: "tilt2",
       img: "img/tilt2.jpg",
       icon: "🧠",
       color: "#c22e7a"
@@ -534,6 +616,7 @@
       tag: "AI",
       desc: "Self-hosted, privacy-first LLM chat interface running entirely on local hardware.",
       url: "https://chat.keldsen.org",
+      slug: "chat",
       img: "img/chat.jpg",
       icon: "🤖",
       color: "#333333"
@@ -543,6 +626,7 @@
       tag: "Security",
       desc: "Self-hosted, Bitwarden-compatible secrets manager — passwords, tokens and keys, locked behind Cloudflare Access plus its own master password.",
       url: "https://vault.keldsen.org",
+      slug: "vault",
       img: "img/vault.jpg",
       icon: "🔐",
       color: "#1f2933"
@@ -552,6 +636,7 @@
       tag: "Yard",
       desc: "Whole-yard layout planner — drag zones like beds, patio, pond, greenhouse and trampoline onto a scaled grid of the property.",
       url: "https://yard.keldsen.org",
+      slug: "organiser",
       img: "img/organiser.jpg",
       icon: "🗺️",
       color: "#35605a"
@@ -561,6 +646,7 @@
       tag: "Rental",
       desc: "Booking site for a duplex apartment in Sète, France, with sea views over the Étang de Thau.",
       url: "https://sete-apartment.vercel.app",
+      slug: "sunsete",
       img: "img/sunsete.jpg",
       icon: "🌅",
       color: "#b5652d"
@@ -570,6 +656,7 @@
       tag: "Coaching",
       desc: "Coaching business platform — CRM for clients and sessions, plus a client portal with CliftonStrengths and AI coaching chat.",
       url: "https://my.coachitfurther.com",
+      slug: "coaching",
       img: "img/coaching.jpg",
       icon: "🧭",
       color: "#00649a"
@@ -579,6 +666,7 @@
       tag: "Infra",
       desc: "Infrastructure monitoring for the EliteMini and self-hosted services — uptime heartbeats, docker image updates, and backup freshness in one dashboard.",
       url: "https://status.keldsen.org",
+      slug: "status",
       img: "img/status.jpg",
       icon: "🛰️",
       color: "#0d4f3c"
@@ -598,7 +686,13 @@
               <path d="M7 17L17 7M17 7H7M17 7V17"/>
             </svg>
           </div>
-          <img src="${app.img}" alt="${app.name} screenshot" loading="lazy" />
+          <button type="button" class="upload-icon" data-slug="${app.slug}" title="Upload a new screenshot" aria-label="Upload a new screenshot for ${app.name}">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 16V4M12 4L7 9M12 4l5 5"/>
+              <path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/>
+            </svg>
+          </button>
+          <img src="${app.img}" alt="${app.name} screenshot" loading="lazy" data-slug="${app.slug}" />
         </div>
         <div class="card-body">
           <div class="card-title-row">
@@ -616,6 +710,124 @@
       <div class="stat"><strong>100%</strong><span>Self-Hosted</span></div>
       <div class="stat"><strong>keldsen.org</strong><span>One Domain</span></div>
     `;
+  }
+
+  let toastTimer = null;
+  function toast(message) {
+    const el = document.getElementById("toast");
+    el.textContent = message;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+  }
+
+  function getAdminKey() {
+    let key = localStorage.getItem("hub_admin_key");
+    if (!key) {
+      key = prompt("Admin key (one-time, saved on this device):");
+      if (key) localStorage.setItem("hub_admin_key", key);
+    }
+    return key;
+  }
+
+  // Crop to 16:10 (center crop) and downscale to 960px wide, matching the
+  // convention every bundled screenshot already follows — so an upload from
+  // any source photo/screenshot ends up sized consistently with the rest.
+  function processImage(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Could not read file"));
+      reader.onload = () => { img.src = reader.result; };
+      img.onerror = () => reject(new Error("Could not decode image"));
+      img.onload = () => {
+        const targetRatio = 16 / 10;
+        const srcRatio = img.width / img.height;
+        let sx = 0, sy = 0, sw = img.width, sh = img.height;
+        if (srcRatio > targetRatio) {
+          sw = img.height * targetRatio;
+          sx = (img.width - sw) / 2;
+        } else {
+          sh = img.width / targetRatio;
+          sy = (img.height - sh) / 2;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = 960;
+        canvas.height = 600;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 960, 600);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  let pendingSlug = null;
+
+  function requestUpload(slug) {
+    pendingSlug = slug;
+    document.getElementById("file-input").click();
+  }
+
+  async function handleFileChosen(file) {
+    const slug = pendingSlug;
+    if (!slug || !file) return;
+    const key = getAdminKey();
+    if (!key) return;
+
+    const btn = document.querySelector(`.upload-icon[data-slug="${slug}"]`);
+    if (btn) btn.classList.add("busy");
+
+    try {
+      const dataUrl = await processImage(file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": key },
+        body: JSON.stringify({ slug, dataUrl }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || "Upload failed");
+
+      const app = apps.find(a => a.slug === slug);
+      if (app) app.img = body.url;
+      const imgEl = document.querySelector(`img[data-slug="${slug}"]`);
+      if (imgEl) imgEl.src = body.url;
+      toast(`Screenshot updated for ${app ? app.name : slug}.`);
+    } catch (e) {
+      if (String(e.message || "").includes("Unauthorized")) {
+        localStorage.removeItem("hub_admin_key");
+      }
+      toast(`Upload failed: ${e.message || e}`);
+    } finally {
+      if (btn) btn.classList.remove("busy");
+    }
+  }
+
+  document.getElementById("grid").addEventListener("click", e => {
+    const btn = e.target.closest(".upload-icon");
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    requestUpload(btn.dataset.slug);
+  });
+
+  document.getElementById("file-input").addEventListener("change", e => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = "";
+    handleFileChosen(file);
+  });
+
+  async function loadManifestOverrides() {
+    try {
+      const res = await fetch("/api/manifest");
+      if (!res.ok) return;
+      const manifest = await res.json();
+      for (const app of apps) {
+        if (manifest[app.slug]) app.img = manifest[app.slug];
+      }
+    } catch (e) {
+      // No manifest yet, or offline — bundled screenshots are still shown.
+    }
   }
 
   function unlock() {
@@ -645,7 +857,10 @@
     if (e.key === "Enter") tryUnlock();
   });
 
+  // Render immediately with the bundled defaults (page is hidden behind the gate
+  // anyway), then swap in any uploaded screenshots once the manifest arrives.
   render();
+  loadManifestOverrides().then(render);
 
   let alreadyUnlocked = false;
   try { alreadyUnlocked = sessionStorage.getItem("hub_unlocked") === "1"; } catch (e) {}
